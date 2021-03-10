@@ -14,9 +14,11 @@ class Midi:
         self.input, self.input_name = open_midiinput(port, client_name=client_name+'-input')
         self.input.set_callback(self)
     
-    @mix
-    def setChannelVolume(channel: int, volume: int):
-        '''set the volume of given channel'''
+    def nrpn(self, channnel, param, data1, data2):
+        self.midi.send_message([CONTROL_CHANGE | self.channel, 0x63, channel])
+        self.midi.send_message([CONTROL_CHANGE | self.channel, 0x62, param])
+        self.midi.send_message([CONTROL_CHANGE | self.channel, 0x6, data1])
+        self.midi.send_message([CONTROL_CHANGE | self.channel, 0x26, data2])
     
     def __call__(self, event, data=None):
         message, deltatime = event
