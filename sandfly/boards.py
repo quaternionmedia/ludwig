@@ -6,5 +6,5 @@ class Qu24(Midi, Mixer):
         super().__init__(self, *args, **kwargs)
     
     @mixer
-    def setChannelVolume(channel:int, volume: int):
-        print('setting channel volume', channel, volume)
+    def fader(channel:int, volume: int):
+        print(self.client_name, 'setting channel volume', channel, volume)

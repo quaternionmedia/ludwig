@@ -4,6 +4,24 @@ from rtmidi.midiutil import open_midioutput, open_midiinput
 mix = HookspecMarker('mixer')
 
 class Mixer:
+    @mix
+    def mute(self, channel: int):
+        '''toggle mute of channel'''
+    @mix
+    def fader(self, channel: int, volume: int):
+        '''set the fader volume of a channel'''
+    @mix
+    def pan(self, channel: int, pan: int):
+        '''pan the channel'''
+    @mix
+    def nrpn(self, parm: int, value: int):
+        '''send nrpm'''
+    @mix
+    def meters(self):
+        '''get all meter values'''
+    @mix
+    def allCall(self):
+        '''get full board status'''
 
 class Midi:
     def __init__(self, *args, port, client_name='midi', channel=0, **kwargs):
