@@ -1,7 +1,7 @@
 from sandfly import mixer
-from sandfly.specs import Mixer
+from sandfly.specs import Midi, Mixer
 
-class Qu24(Mixer):
+class Qu24(Midi, Mixer):
     def __init__(self, *args, **kwargs):
         super().__init__(self, *args, **kwargs)
     
