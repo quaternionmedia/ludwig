@@ -35,12 +35,15 @@ class Mixer:
     
 
 class Midi:
-    def __init__(self, *args, port, client_name='midi', channel=0, **kwargs):
+    def __init__(self, *args, port, client_name='midi', channel=0, input_name=None, **kwargs):
         self.port = port
         self.client_name = client_name
         self.channel = channel
         self.midi, self.name = open_midioutput(port, client_name=client_name+'-output')
-        self.input, self.input_name = open_midiinput(port, client_name=client_name+'-input')
+        if input_name:
+            self.input, self.input_name = open_midiinput(input_name, client_name=client_name+'-input')
+        else:
+            self.input, self.input_name = open_midiinput(port, client_name=client_name+'-input')
         self.input.set_callback(self)
     
     def nrpn(self, channel, param, data1, data2):
