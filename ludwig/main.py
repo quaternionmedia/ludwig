@@ -15,7 +15,9 @@ def main():
 def get_plugin_manager():
     pm = PluginManager('mixer')
     pm.add_hookspecs(Mixer)
-    pm.register(Qu24(hook=pm.hook, port='QU-24 MIDI 1', client_name='Qu24'))
+    # pm.register(Qu24(hook=pm.hook, port='QU-24 MIDI 1', client_name='Qu24'))
+    pm.register(Qu24(hook=pm.hook, port='Launchpad X:Launchpad X MIDI 2', client_name='Qu24'))
+    # pm.register(Qu24(hook=pm.hook, port='FreeWheeling:FreeWheeling IN 1', input_name='FreeWheeling:FreeWheeling OUT 1', client_name='Qu24'))
     return pm
 
 

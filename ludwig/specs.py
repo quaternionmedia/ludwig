@@ -54,4 +54,4 @@ class Midi:
     
     def __call__(self, event, data=None):
         message, deltatime = event
-        print(self.client_name, message)
+        print(self.client_name, message, deltatime)
