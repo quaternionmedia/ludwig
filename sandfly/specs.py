@@ -1,5 +1,7 @@
 from pluggy import HookspecMarker
 from rtmidi.midiutil import open_midioutput, open_midiinput
+from typing import Union
+from rtmidi.midiconstants import CONTROL_CHANGE
 
 mix = HookspecMarker('mixer')
 
@@ -14,8 +16,6 @@ class Mixer:
     def pan(self, channel: int, pan: int):
         '''pan the channel'''
     @mix
-    def nrpn(self, parm: int, value: int):
-        '''send nrpm'''
     @mix
     def meters(self):
         '''get all meter values'''
@@ -32,7 +32,7 @@ class Midi:
         self.input, self.input_name = open_midiinput(port, client_name=client_name+'-input')
         self.input.set_callback(self)
     
-    def nrpn(self, channnel, param, data1, data2):
+    def nrpn(self, channel, param, data1, data2):
         self.midi.send_message([CONTROL_CHANGE | self.channel, 0x63, channel])
         self.midi.send_message([CONTROL_CHANGE | self.channel, 0x62, param])
         self.midi.send_message([CONTROL_CHANGE | self.channel, 0x6, data1])
