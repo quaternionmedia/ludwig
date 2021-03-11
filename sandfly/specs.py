@@ -16,12 +16,23 @@ class Mixer:
     def pan(self, channel: int, pan: int):
         '''pan the channel'''
     @mix
+    def compressor(self,
+        channel: int, 
+        type: Union[int, None] = None,
+        attack: Union[int, None] = None,
+        release: Union[int, None] = None,
+        knee: Union[int, None] = None,
+        ratio: Union[int, None] = None,
+        threshold: Union[int, None] = None,
+        gain: Union[int, None] = None):
+        '''set the gain of the channel'''
     @mix
     def meters(self):
         '''get all meter values'''
     @mix
     def allCall(self):
         '''get full board status'''
+    
 
 class Midi:
     def __init__(self, *args, port, client_name='midi', channel=0, **kwargs):
