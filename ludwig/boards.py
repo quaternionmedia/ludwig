@@ -1,5 +1,5 @@
-from sandfly import mixer
-from sandfly.specs import Midi, Mixer
+from ludwig import mixer
+from ludwig.specs import Midi, Mixer
 from rtmidi.midiconstants import NOTE_ON, CONTROL_CHANGE
 from typing import Union
 

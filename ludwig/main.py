@@ -1,5 +1,5 @@
-from sandfly.specs import Mixer
-from sandfly.boards import Qu24
+from ludwig.specs import Mixer
+from ludwig.boards import Qu24
 from pluggy import PluginManager
 
 def main():
