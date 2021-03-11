@@ -6,7 +6,7 @@ def main():
     pm = get_plugin_manager()
     try:
         while True:
-            input()
+            exec(input('> '))
     except Exception as e:
         print(e)
     # finally:
