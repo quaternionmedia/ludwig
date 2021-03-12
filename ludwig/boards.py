@@ -2,11 +2,14 @@ from ludwig import mixer
 from ludwig.specs import Midi, Mixer
 from rtmidi.midiconstants import NOTE_ON, CONTROL_CHANGE
 from typing import Union
+from datetime import datetime
 
 class Qu24(Midi, Mixer):
     def __init__(self, *args, **kwargs):
         super().__init__(self, *args, **kwargs)
         self.header = [0xF0 , 0x0 , 0x0 , 0x1A , 0x50 , 0x11 , 0x1 , 0x0 , self.channel]
+        self.start_time = datetime.now()
+        self.log = []
 
     @mixer
     def allCall(self):
@@ -49,4 +52,13 @@ class Qu24(Midi, Mixer):
             self.nrpn(channel, 0x66, threshold, 0x7)
         if gain:
             self.nrpn(channel, 0x67, gain, 0x7)
-        
+    
+    @mixer
+    def close(self):
+        from json import dump
+        with open(str(self.start_time) + '.json', 'w') as f:
+            dump(self.log, f)
+    
+    def __call__(self, event, data=None):
+        super().__call__(event, data)
+        self.log.append(event)

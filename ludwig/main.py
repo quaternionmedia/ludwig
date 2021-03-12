@@ -9,8 +9,8 @@ def main():
             exec(input('> '))
     except Exception as e:
         print(e)
-    # finally:
-    #     pm.hook.close()
+    finally:
+        pm.hook.close()
 
 def get_plugin_manager():
     pm = PluginManager('mixer')
