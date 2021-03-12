@@ -40,10 +40,8 @@ class Midi:
         self.client_name = client_name
         self.channel = channel
         self.midi, self.name = open_midioutput(port, client_name=client_name+'-output')
-        if input_name:
-            self.input, self.input_name = open_midiinput(input_name, client_name=client_name+'-input')
-        else:
-            self.input, self.input_name = open_midiinput(port, client_name=client_name+'-input')
+        self.input, self.input_name = open_midiinput(input_name if input_name else port, client_name=client_name+'-input')
+        self.input.ignore_types(sysex=False)
         self.input.set_callback(self)
     
     def nrpn(self, channel, param, data1, data2):
