@@ -31,12 +31,10 @@ class Qu24(Midi, Mixer):
     @mixer
     def mute(self, channel:int):
         self.midi.send_message([NOTE_ON | self.channel, channel, 127])
-        self.midi.send_message([NOTE_OFF | self.channel, channel, 0])
     
     @mixer
     def unmute(self, channel:int):
-        self.midi.send_message([NOTE_ON | self.channel, channel, 0])
-        self.midi.send_message([NOTE_OFF | self.channel, channel, 0])
+        self.midi.send_message([NOTE_ON | self.channel, channel, 1])
     
     @mixer
     def compressor(self,
