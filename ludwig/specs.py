@@ -8,13 +8,16 @@ mix = HookspecMarker('mixer')
 class Mixer:
     @mix
     def mute(self, channel: int):
-        '''toggle mute of channel'''
+        '''mute channel'''
+    @mix
+    def unmute(self, channel: int):
+        '''unmute channel'''
     @mix
     def fader(self, channel: int, volume: int):
         '''set the fader volume of a channel'''
     @mix
     def pan(self, channel: int, pan: int):
-        '''pan the channel'''
+        '''set pan of the channel'''
     @mix
     def compressor(self,
         channel: int, 

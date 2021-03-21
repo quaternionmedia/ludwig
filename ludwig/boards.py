@@ -1,6 +1,6 @@
 from ludwig import mixer
 from ludwig.specs import Midi, Mixer
-from rtmidi.midiconstants import NOTE_ON, CONTROL_CHANGE
+from rtmidi.midiconstants import NOTE_ON, NOTE_OFF, CONTROL_CHANGE
 from typing import Union
 from datetime import datetime
 
@@ -27,6 +27,16 @@ class Qu24(Midi, Mixer):
     @mixer
     def pan(self, channel:int, pan: int):
         self.nrpn(channel, 0x16, pan, 0x7)
+    
+    @mixer
+    def mute(self, channel:int):
+        self.midi.send_message([NOTE_ON | self.channel, channel, 127])
+        self.midi.send_message([NOTE_OFF | self.channel, channel, 0])
+    
+    @mixer
+    def unmute(self, channel:int):
+        self.midi.send_message([NOTE_ON | self.channel, channel, 0])
+        self.midi.send_message([NOTE_OFF | self.channel, channel, 0])
     
     @mixer
     def compressor(self,
