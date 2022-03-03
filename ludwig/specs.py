@@ -36,6 +36,10 @@ class Mixer:
     def allCall(self):
         """get full board status"""
     
+    @mix
+    def close(self):
+        """close the midi connection"""
+    
 
 class Midi:
     def __init__(self, 
