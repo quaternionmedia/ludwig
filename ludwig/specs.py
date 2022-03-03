@@ -1,6 +1,5 @@
 from pluggy import HookspecMarker
 from rtmidi.midiutil import open_midioutput, open_midiinput
-from typing import Union
 from rtmidi.midiconstants import CONTROL_CHANGE
 
 mix = HookspecMarker('mixer')
@@ -21,14 +20,14 @@ class Mixer:
     @mix
     def compressor(self,
         channel: int, 
-        type: Union[int, None] = None,
-        attack: Union[int, None] = None,
-        release: Union[int, None] = None,
-        knee: Union[int, None] = None,
-        ratio: Union[int, None] = None,
-        threshold: Union[int, None] = None,
-        gain: Union[int, None] = None):
-        '''set the gain of the channel'''
+        type: int | None = None,
+        attack: int | None = None,
+        release: int | None = None,
+        knee: int | None = None,
+        ratio: int | None = None,
+        threshold: int | None = None,
+        gain: int | None = None):
+        '''set the compressor of the channel'''
     @mix
     def meters(self):
         '''get all meter values'''
