@@ -1,7 +1,7 @@
 from ludwig import mixer
 from ludwig.specs import Midi, Mixer
 from rtmidi.midiconstants import NOTE_ON, NOTE_OFF, CONTROL_CHANGE
-from pydantic import conint
+from ludwig.types import uint1, uint2, uint4, uint7, uint8, uint16
 from datetime import datetime
 
 class Qu24(Midi, Mixer):
@@ -20,32 +20,32 @@ class Qu24(Midi, Mixer):
         self.send(self.header + [0x12, 0x1, 0xF7])
     
     @mixer
-    def fader(self, channel:int, volume: int):
+    def fader(self, channel: uint7, volume: uint8):
         print(self.client_name, 'setting channel volume', channel, volume)
         self.nrpn(channel=channel, param=0x17, data1=volume, data2=0x7)
     
     @mixer
-    def pan(self, channel:int, pan: int):
+    def pan(self, channel: uint7, pan: uint8):
         self.nrpn(channel, 0x16, pan, 0x7)
     
     @mixer
-    def mute(self, channel:conint(ge=0, le=127)):
+    def mute(self, channel: uint7):
         self.send([NOTE_ON | self.channel, channel, 127])
     
     @mixer
-    def unmute(self, channel:conint(ge=0, le=127)):
+    def unmute(self, channel: uint7):
         self.send([NOTE_ON | self.channel, channel, 1])
     
     @mixer
     def compressor(self,
-            channel: int, 
-            type: int | None = None,
-            attack: int | None = None,
-            release: int | None = None,
-            knee: int | None = None,
-            ratio: int | None = None,
-            threshold: int | None = None,
-            gain: int | None = None):
+            channel: uint7, 
+            type: uint2 | None = None,
+            attack: uint7 | None = None,
+            release: uint7 | None = None,
+            knee: uint1 | None = None, 
+            ratio: uint7 | None = None,
+            threshold: uint7 | None = None,
+            gain: uint7 | None = None):
         if type:
             self.nrpn(channel, 0x61, type, 0x7)
         if attack:

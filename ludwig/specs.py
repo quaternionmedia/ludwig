@@ -1,7 +1,8 @@
 from pluggy import HookspecMarker
 from rtmidi.midiutil import open_midioutput, open_midiinput
 from rtmidi.midiconstants import CONTROL_CHANGE
-from pydantic import conint
+from ludwig.types import uint4, uint7, uint8, uint16
+
 mix = HookspecMarker('mixer')
 
 class Mixer:
@@ -37,7 +38,13 @@ class Mixer:
     
 
 class Midi:
-    def __init__(self, *args, port, client_name='midi', channel=0, input_name=None, **kwargs):
+    def __init__(self, 
+            *args,
+            port: str,
+            client_name: str = 'midi',
+            channel: uint4 = 0,
+            input_name: str | None = None,
+            **kwargs):
         self.port = port
         self.client_name = client_name
         self.channel = channel
@@ -46,11 +53,15 @@ class Midi:
         self.input.ignore_types(sysex=False)
         self.input.set_callback(self)
     
-    def send(self, message: list[conint(ge=0, lt=256)]):
+    def send(self, message: list[uint8]):
         """send a regular MIDI message"""
         self.midi.send_message(message)
 
-    def nrpn(self, channel, param, data1, data2):
+    def nrpn(self, 
+            channel: uint7,
+            param: uint8,
+            data1: uint8,
+            data2: uint8):
         """send a MIDI Non-Registered Parameter Number"""
         self.send([CONTROL_CHANGE | self.channel, 0x63, channel])
         self.send([CONTROL_CHANGE | self.channel, 0x62, param])
