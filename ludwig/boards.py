@@ -46,6 +46,21 @@ class Qu24(Midi, Mixer):
             ratio: uint7 | None = None,
             threshold: uint7 | None = None,
             gain: uint7 | None = None):
+        """send values to the compressor
+        
+        Reuqired arguments:
+            channel (uint7): MIDI channel
+        
+        Optional arguments:
+            type (uint2): 4 allowed types
+            attack (uint7): 300us to 300ms
+            release (uint7): 100ms to 2s
+            knee (uint1): 0 = hard, 1 = soft
+            ratio (uint7): 1:1 to inf (e.g. 2.6:1 = 80)
+            threshold (uint7): -46 to +18dB
+            gain (uint7): 0 +18dB
+        """
+        
         if type:
             self.nrpn(channel, 0x61, type, 0x7)
         if attack:

@@ -6,6 +6,7 @@ from ludwig.types import uint4, uint7, uint8, uint16
 mix = HookspecMarker('mixer')
 
 class Mixer:
+    """A generic mixer class, to be overwritten by individual boards"""
     @mix
     def mute(self, channel: int):
         """mute channel"""
@@ -49,6 +50,17 @@ class Midi:
             channel: uint4 = 0,
             input_name: str | None = None,
             **kwargs):
+        """A generic MIDI connection class
+        attributes:
+            port (str): the name of the MIDI port
+            client_name (str): the name of the MIDI client to be connected
+            channel (int): the MIDI channel to communicate on (default = 0)
+            input_name (str): a custom name for the input client
+        methods:
+            send(message): send a MIDI message of bytes (sent as integers)
+            nrpm(message): send a MIDI NRPN (Non-Registered Parameter Number)
+        """
+        
         self.port = port
         self.client_name = client_name
         self.channel = channel
