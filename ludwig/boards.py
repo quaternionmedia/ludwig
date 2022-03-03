@@ -64,7 +64,8 @@ class Qu24(Midi, Mixer):
     @mixer
     def close(self):
         from json import dump
-        with open(str(self.start_time) + '.json', 'w') as f:
+        from os.path import join
+        with open(join('logs', str(self.start_time) + '.json'), 'w') as f:
             dump(self.log, f)
     
     def __call__(self, event, data=None):
