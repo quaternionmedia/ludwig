@@ -79,10 +79,11 @@ class Midi:
             data1: uint8,
             data2: uint8):
         """send a MIDI Non-Registered Parameter Number"""
-        self.send([CONTROL_CHANGE | self.channel, 0x63, channel])
-        self.send([CONTROL_CHANGE | self.channel, 0x62, param])
-        self.send([CONTROL_CHANGE | self.channel, 0x6, data1])
-        self.send([CONTROL_CHANGE | self.channel, 0x26, data2])
+        header = CONTROL_CHANGE | self.channel
+        self.send([header, 0x63, channel])
+        self.send([header, 0x62, param])
+        self.send([header, 0x6, data1])
+        self.send([header, 0x26, data2])
     
     def __call__(self, event, data=None):
         message, deltatime = event
