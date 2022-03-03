@@ -7,16 +7,16 @@ mix = HookspecMarker('mixer')
 class Mixer:
     @mix
     def mute(self, channel: int):
-        '''mute channel'''
+        """mute channel"""
     @mix
     def unmute(self, channel: int):
-        '''unmute channel'''
+        """unmute channel"""
     @mix
     def fader(self, channel: int, volume: int):
-        '''set the fader volume of a channel'''
+        """set the fader volume of a channel"""
     @mix
     def pan(self, channel: int, pan: int):
-        '''set pan of the channel'''
+        """set pan of the channel"""
     @mix
     def compressor(self,
         channel: int, 
@@ -27,13 +27,13 @@ class Mixer:
         ratio: int | None = None,
         threshold: int | None = None,
         gain: int | None = None):
-        '''set the compressor of the channel'''
+        """set the compressor of the channel"""
     @mix
     def meters(self):
-        '''get all meter values'''
+        """get all meter values"""
     @mix
     def allCall(self):
-        '''get full board status'''
+        """get full board status"""
     
 
 class Midi:
@@ -47,9 +47,11 @@ class Midi:
         self.input.set_callback(self)
     
     def send(self, message: list[conint(ge=0, lt=256)]):
+        """send a regular MIDI message"""
         self.midi.send_message(message)
 
     def nrpn(self, channel, param, data1, data2):
+        """send a MIDI Non-Registered Parameter Number"""
         self.send([CONTROL_CHANGE | self.channel, 0x63, channel])
         self.send([CONTROL_CHANGE | self.channel, 0x62, param])
         self.send([CONTROL_CHANGE | self.channel, 0x6, data1])
