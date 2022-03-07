@@ -17,9 +17,9 @@ def main():
         parser.add_argument('channels', metavar='N', type=channel, nargs='+',
                             help='an integer for the accumulator')
         group = parser.add_mutually_exclusive_group()
-        group.add_argument('--mute', dest='mute', action='store_true',
+        group.add_argument('-m', '--mute', dest='mute', action='store_true',
                     help='mute the channel(s)')
-        group.add_argument('--unmute', dest='unmute', action='store_true',
+        group.add_argument('-u', '--unmute', dest='unmute', action='store_true',
                     help='unmute the channel(s)')
         args = parser.parse_args()
 
