@@ -4,10 +4,10 @@ from rtmidi.midiconstants import NOTE_ON, NOTE_OFF, CONTROL_CHANGE
 from ludwig.types import uint1, uint2, uint4, uint7, uint8, uint16
 
 
-class Qu24(Midi, Mixer):
+class Gld(Midi, Mixer):
     def __init__(self, *args, **kwargs):
         super().__init__(self, *args, **kwargs)
-        self.header = [0xF0, 0x0, 0x0, 0x1A, 0x50, 0x11, 0x1, 0x0, self.channel]
+        self.header = [0xF0, 0x0, 0x0, 0x1A, 0x50, 0x10, 0x1, 0x0, self.channel]
 
     @mixer
     def allCall(self):
@@ -72,6 +72,5 @@ class Qu24(Midi, Mixer):
             self.nrpn(channel, 0x65, ratio, 0x7)
         if threshold:
             self.nrpn(channel, 0x66, threshold, 0x7)
-
         if gain:
             self.nrpn(channel, 0x67, gain, 0x7)
