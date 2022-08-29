@@ -1,5 +1,4 @@
-from ludwig import mixer
-from ludwig.specs import Midi, Mixer
+from ludwig import mixer, Midi, Mixer
 from rtmidi.midiconstants import NOTE_ON
 from ludwig.types import uint1, uint2, uint7, uint8
 

@@ -1,5 +1,5 @@
-from ludwig.specs import Mixer
-from ludwig.boards import Qu24
+from .mixer import Mixer
+from .boards import Qu24
 from pluggy import PluginManager
 from argparse import ArgumentTypeError
 
