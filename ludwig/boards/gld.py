@@ -22,6 +22,18 @@ class Gld(Midi, Mixer):
         self.nrpn(channel=channel, param=0x17, data1=volume, data2=0x7)
 
     @mixer
+    def channel_assign_to_main_mix(self, channel: uint7, on: bool):
+        self.nrpn(channel=channel, param=0x18, data1=0x7F if on else 0x3F, data2=0x7)
+
+    @mixer
+    def aux_send_level(self, channel: uint7, snd: uint8, level: uint8):
+        self.nrpn(channel=channel, param=snd, data1=level, data2=0x7)
+
+    @mixer
+    def dca_assign(self, channel: uint7, dca: uint4, on: bool):
+        self.nrpn(channel=channel, param=on * 0x40 | dca, data1=0x4 | dca, data2=0x7)
+
+    @mixer
     def pan(self, channel: uint7, pan: uint8):
         self.nrpn(channel, 0x16, pan, 0x7)
 
