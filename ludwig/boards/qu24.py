@@ -7,15 +7,15 @@ from ludwig.types import uint1, uint2, uint4, uint7, uint8, uint16
 class Qu24(Midi, Mixer):
     def __init__(self, *args, **kwargs):
         super().__init__(self, *args, **kwargs)
-        self.header = [0xF0, 0x0, 0x0, 0x1A, 0x50, 0x11, 0x1, 0x0, self.channel]
+        self.sysex_header = [0xF0, 0x0, 0x0, 0x1A, 0x50, 0x11, 0x1, 0x0, self.channel]
 
     @mixer
     def allCall(self):
-        self.send(self.header[:-1] + [0x7F] + [0x10, 0x0, 0xF7])
+        self.send(self.sysex_header[:-1] + [0x7F] + [0x10, 0x0, 0xF7])
 
     @mixer
     def meters(self):
-        self.send(self.header + [0x12, 0x1, 0xF7])
+        self.send(self.sysex_header + [0x12, 0x1, 0xF7])
 
     @mixer
     def fader(self, channel: uint7, volume: uint8):

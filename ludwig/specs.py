@@ -96,7 +96,11 @@ class Midi:
         self.send([header, 0x62, param])
         self.send([header, 0x6, data1])
         self.send([header, 0x26, data2])
-    
+
+    def sysex(self, message: list[uint8]):
+        """send a MIDI sysex message. Requires self.sysex_header to be set."""
+        self.midi.send_message([*self.sysex_header, *message, 0xF7])
+
     def __call__(self, event, data=None):
         message, deltatime = event
         print(self.client_name, message, deltatime)
