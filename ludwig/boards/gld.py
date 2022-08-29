@@ -1,7 +1,8 @@
 from ludwig import mixer
 from ludwig.specs import Midi, Mixer
-from rtmidi.midiconstants import NOTE_ON, NOTE_OFF, CONTROL_CHANGE
-from ludwig.types import uint1, uint2, uint4, uint7, uint8, uint16
+from rtmidi.midiconstants import NOTE_ON
+from ludwig.types import uint1, uint2, uint3, uint4, uint7, uint8
+from pydantic import conint
 
 
 class Gld(Midi, Mixer):
@@ -32,6 +33,25 @@ class Gld(Midi, Mixer):
     @mixer
     def dca_assign(self, channel: uint7, dca: uint4, on: bool):
         self.nrpn(channel=channel, param=on * 0x40 | dca, data1=0x4 | dca, data2=0x7)
+
+    @mixer
+    def channel_name(self, channel: uint7, name: str):
+        if len(name) > 8:
+            raise Exception("Name must be less than 8 characters")
+        self.sysex([0x3, channel] + [ord(n) for n in name])
+
+    @mixer
+    def channel_color(self, channel: uint7, color: uint3):
+        self.sysex([0x6, channel, color])
+
+    @mixer
+    def scene_recall(self, scene: conint(gt=0, le=500)):
+        """recall scene, where scenes are 1 indexed"""
+        self.send([0xB0 | self.channel, 0x0, scene // 128, scene % 128])
+
+    @mixer
+    def mix_select(self, channel: uint7, select: bool):
+        self.send([0xA0 | self.channel, channel, int(select)])
 
     @mixer
     def pan(self, channel: uint7, pan: uint8):
