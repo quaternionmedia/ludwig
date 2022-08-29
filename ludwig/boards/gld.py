@@ -31,8 +31,11 @@ class Gld(Midi, Mixer):
         self.nrpn(channel=channel, param=snd, data1=level, data2=0x7)
 
     @mixer
-    def dca_assign(self, channel: uint7, dca: uint4, on: bool):
-        self.nrpn(channel=channel, param=on * 0x40 | dca, data1=0x4 | dca, data2=0x7)
+    def dca_assign(self, channel: uint7, dca: conint(ge=1, le=16), on: bool):
+        """1 indexed"""
+        self.nrpn(
+            channel=channel, param=on * 0x40 | dca - 1, data1=0x4 | dca, data2=0x7
+        )
 
     @mixer
     def channel_name(self, channel: uint7, name: str):
@@ -45,7 +48,7 @@ class Gld(Midi, Mixer):
         self.sysex([0x6, channel, color])
 
     @mixer
-    def scene_recall(self, scene: conint(gt=0, le=500)):
+    def scene_recall(self, scene: conint(ge=1, le=500)):
         """recall scene, where scenes are 1 indexed"""
         self.send([0xB0 | self.channel, 0x0, scene // 128, scene % 128])
 

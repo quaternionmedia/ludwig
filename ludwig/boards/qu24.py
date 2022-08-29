@@ -1,7 +1,7 @@
 from ludwig import mixer
 from ludwig.specs import Midi, Mixer
 from rtmidi.midiconstants import NOTE_ON
-from ludwig.types import uint7, uint8
+from ludwig.types import uint1, uint2, uint7, uint8
 
 
 class Qu24(Midi, Mixer):
