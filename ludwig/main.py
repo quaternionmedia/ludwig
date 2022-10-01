@@ -37,8 +37,6 @@ def main():
             help='unmute the channel(s)',
         )
         args = parser.parse_args()
-
-        args = parser.parse_args()
         # print(args)
         for c in args.channels:
             if args.mute:
