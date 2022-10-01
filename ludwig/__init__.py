@@ -9,4 +9,7 @@ It can run as a standalone server, or through a command line interface.
 
 from pluggy import HookimplMarker
 
+from .mixer import Mixer
+from .midi import Midi
+
 mixer = HookimplMarker('mixer')
