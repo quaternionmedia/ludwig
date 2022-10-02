@@ -35,26 +35,26 @@ class XAir(Midi, Mixer):
     @mixer
     def mute(self, channel: uint5):
         """Mute the channel
-        Mute       CH CMD No.    Value   Comment
-        CH Mutes   2  CC  0-15   0/127    Input Channels 1-16
-        CH Mutes   2  CC  16     0/127    AuxLineIn 17-18 / USB Recorder Playback (stereo)
-        CH Mutes   2  CC  17-20  0/127    FX1-4 Return (stereo)
-        Send Mutes 2  CC  21-26  0/127    Aux1-6 / Subgroup
-        Send Mutes 2  CC  27-30  0...127  Fx1-4
-        Main Mute  2  CC  31     0/127    Main LR (stereo)
+        Mute       CH CMD No.    Value  Comment
+        CH Mutes   2  CC  0-15   127    Input Channels 1-16
+        CH Mutes   2  CC  16     127    AuxLineIn 17-18 / USB Recorder Playback (stereo)
+        CH Mutes   2  CC  17-20  127    FX1-4 Return (stereo)
+        Send Mutes 2  CC  21-26  127    Aux1-6 / Subgroup
+        Send Mutes 2  CC  27-30  127    Fx1-4
+        Main Mute  2  CC  31     127    Main LR (stereo)
         """
         self.send([CONTROL_CHANGE | 1, channel, 127])
 
     @mixer
-    def unmute(self, channel: uint7):
-        """Mute the channel
-        Mute       CH CMD No.    Value   Comment
-        CH Mutes   2  CC  0-15   0/127    Input Channels 1-16
-        CH Mutes   2  CC  16     0/127    AuxLineIn 17-18 / USB Recorder Playback (stereo)
-        CH Mutes   2  CC  17-20  0/127    FX1-4 Return (stereo)
-        Send Mutes 2  CC  21-26  0/127    Aux1-6 / Subgroup
-        Send Mutes 2  CC  27-30  0...127  Fx1-4
-        Main Mute  2  CC  31     0/127    Main LR (stereo)
+    def unmute(self, channel: uint5):
+        """Unmute the channel
+        Mute       CH CMD No.    Value  Comment
+        CH Mutes   2  CC  0-15   0      Input Channels 1-16
+        CH Mutes   2  CC  16     0      AuxLineIn 17-18 / USB Recorder Playback (stereo)
+        CH Mutes   2  CC  17-20  0      FX1-4 Return (stereo)
+        Send Mutes 2  CC  21-26  0      Aux1-6 / Subgroup
+        Send Mutes 2  CC  27-30  0      Fx1-4
+        Main Mute  2  CC  31     0      Main LR (stereo)
         """
         self.send([CONTROL_CHANGE | 1, channel, 0])
 
