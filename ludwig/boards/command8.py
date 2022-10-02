@@ -36,3 +36,14 @@ class Command8(Midi, Mixer):
             if message[1] == 7:
                 print(f'fader channel {message[0] & 0x0F } at {message[2]}')
                 self.hook.fader(channel=message[0] & 0x0F, volume=message[2])
+            elif message[1] == 10:
+                print(f'pan channel {message[0] & 0x0F } at {message[2]}')
+                self.hook.pan(channel=message[0] & 0x0F, pan=message[2])
+            elif message[1] == 14:
+                print(
+                    f'{"un" if message[2] == 0 else ""}mute channel {message[0] & 0x0F }'
+                )
+                if message[2]:
+                    self.hook.mute(channel=message[0] & 0x0F)
+                else:
+                    self.hook.unmute(channel=message[0] & 0x0F)
