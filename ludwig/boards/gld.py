@@ -18,7 +18,7 @@ class Gld(Midi, Mixer):
         self.sysex([0x12, 0x1])
 
     @mixer
-    def fader(self, channel: uint7, volume: uint8):
+    def fader(self, channel: uint7, volume: uint7):
         self.nrpn(channel=channel, param=0x17, data1=volume, data2=0x7)
 
     @mixer
@@ -26,7 +26,7 @@ class Gld(Midi, Mixer):
         self.nrpn(channel=channel, param=0x18, data1=0x7F if on else 0x3F, data2=0x7)
 
     @mixer
-    def aux_send_level(self, channel: uint7, snd: uint8, level: uint8):
+    def aux_send_level(self, channel: uint7, snd: uint8, level: uint7):
         self.nrpn(channel=channel, param=snd, data1=level, data2=0x7)
 
     @mixer
