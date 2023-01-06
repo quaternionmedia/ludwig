@@ -1,7 +1,7 @@
-from .mixer import Mixer
-from .boards import Qu24
 from pluggy import PluginManager
 from argparse import ArgumentTypeError
+from .mixer import Mixer
+from .boards import Generic
 
 
 def channel(n: int):
@@ -12,7 +12,7 @@ def channel(n: int):
         return n
 
 
-def main():
+def mute():
     pm = get_plugin_manager()
     try:
         from argparse import ArgumentParser
@@ -54,13 +54,27 @@ def main():
 
 
 def get_plugin_manager():
+
     pm = PluginManager('mixer')
     pm.add_hookspecs(Mixer)
-    pm.register(Qu24(hook=pm.hook, port='QU-24 MIDI 1', client_name='Qu24'))
+    # pm.register(Qu24(hook=pm.hook, port='QU-24 MIDI 1', client_name='Qu24'))
     # pm.register(Qu24(hook=pm.hook, port='Launchpad X:Launchpad X MIDI 2', client_name='Qu24'))
     # pm.register(Qu24(hook=pm.hook, port='FreeWheeling:FreeWheeling IN 1', input_name='FreeWheeling:FreeWheeling OUT 1', client_name='Qu24'))
+    pm.register(
+        Generic(
+            hook=pm.hook,
+            client_name='generic',
+        )
+    )
     return pm
 
 
-if __name__ == '__main__':
-    main()
+def main():
+    pm = get_plugin_manager()
+    try:
+        while True:
+            input()
+    except Exception as e:
+        print(e)
+    finally:
+        pm.hook.close()

@@ -10,6 +10,6 @@ It can run as a standalone server, or through a command line interface.
 from pluggy import HookimplMarker
 
 from .mixer import Mixer
-from .midi import Midi
+from .midi import Midi, MidiInput
 
 mixer = HookimplMarker('mixer')
