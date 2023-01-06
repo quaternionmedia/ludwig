@@ -1,3 +1,5 @@
+from .mixer import Mixer
+from .boards import XAir
 from pluggy import PluginManager
 from argparse import ArgumentTypeError
 from .mixer import Mixer
@@ -37,8 +39,6 @@ def mute():
             help='unmute the channel(s)',
         )
         args = parser.parse_args()
-
-        args = parser.parse_args()
         # print(args)
         for c in args.channels:
             if args.mute:
@@ -57,9 +57,7 @@ def get_plugin_manager():
 
     pm = PluginManager('mixer')
     pm.add_hookspecs(Mixer)
-    # pm.register(Qu24(hook=pm.hook, port='QU-24 MIDI 1', client_name='Qu24'))
-    # pm.register(Qu24(hook=pm.hook, port='Launchpad X:Launchpad X MIDI 2', client_name='Qu24'))
-    # pm.register(Qu24(hook=pm.hook, port='FreeWheeling:FreeWheeling IN 1', input_name='FreeWheeling:FreeWheeling OUT 1', client_name='Qu24'))
+    # pm.register(XAir(hook=pm.hook, port='X18', client_name='XAir'))
     pm.register(
         Generic(
             hook=pm.hook,

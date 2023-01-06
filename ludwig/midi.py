@@ -1,12 +1,14 @@
 from rtmidi.midiutil import open_midioutput, open_midiinput
 from rtmidi.midiconstants import CONTROL_CHANGE
 from ludwig.types import uint4, uint7, uint8
+from rtmidi import API_UNIX_JACK
 
 
 class Midi:
     def __init__(
         self,
         *args,
+        hook,
         port: str,
         client_name: str = 'midi',
         channel: uint4 = 0,
@@ -23,15 +25,17 @@ class Midi:
             send(message): send a MIDI message of bytes (sent as integers)
             nrpm(message): send a MIDI NRPN (Non-Registered Parameter Number)
         """
-
+        self.hook = hook
         self.port = port
         self.client_name = client_name
         self.channel = channel
         self.midi, self.name = open_midioutput(
-            port, client_name=client_name + '-output'
+            port, client_name=client_name + '-output', api=API_UNIX_JACK
         )
         self.input, self.input_name = open_midiinput(
-            input_name if input_name else port, client_name=client_name + '-input'
+            input_name if input_name else port,
+            client_name=client_name + '-input',
+            api=API_UNIX_JACK,
         )
         self.input.ignore_types(sysex=False)
         self.input.set_callback(self)
