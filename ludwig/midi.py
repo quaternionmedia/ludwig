@@ -8,6 +8,7 @@ class Midi:
     def __init__(
         self,
         *args,
+        hook,
         port: str,
         client_name: str = 'midi',
         channel: uint4 = 0,
@@ -24,7 +25,7 @@ class Midi:
             send(message): send a MIDI message of bytes (sent as integers)
             nrpm(message): send a MIDI NRPN (Non-Registered Parameter Number)
         """
-
+        self.hook = hook
         self.port = port
         self.client_name = client_name
         self.channel = channel
