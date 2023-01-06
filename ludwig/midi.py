@@ -11,7 +11,7 @@ class Midi:
         client_name: str = 'midi',
         channel: uint4 = 0,
         input_name: str | None = None,
-        **kwargs
+        **kwargs,
     ):
         """A generic MIDI connection class
         attributes:
@@ -55,3 +55,13 @@ class Midi:
     def __call__(self, event, data=None):
         message, deltatime = event
         print(self.client_name, message, deltatime)
+
+
+class MidiInput:
+    def __init__(self, client_name='MidiInput', *args, **kwargs) -> None:
+        self.name = client_name
+        self.input, self.port_name = open_midiinput(
+            None, api=1, use_virtual=True, client_name=client_name
+        )
+        print('connected', client_name)
+        self.input.set_callback(self)
