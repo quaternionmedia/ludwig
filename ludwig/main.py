@@ -1,9 +1,7 @@
-from .mixer import Mixer
-from .boards import XAir
 from pluggy import PluginManager
 from argparse import ArgumentTypeError
 from .mixer import Mixer
-from .boards import Generic
+from .boards import Generic, Command8
 
 
 def channel(n: int):
@@ -58,6 +56,7 @@ def get_plugin_manager():
     pm = PluginManager('mixer')
     pm.add_hookspecs(Mixer)
     # pm.register(XAir(hook=pm.hook, port='X18', client_name='XAir'))
+    pm.register(Command8(hook=pm.hook, port='Command8 Port 1', client_name='Command8'))
     pm.register(
         Generic(
             hook=pm.hook,
