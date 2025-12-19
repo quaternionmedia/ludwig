@@ -1,7 +1,7 @@
-from .mixer import Mixer
-from .boards import XAir
 from pluggy import PluginManager
 from argparse import ArgumentTypeError
+from .mixer import Mixer
+from .boards import Generic, Command8
 
 
 def channel(n: int):
@@ -12,7 +12,7 @@ def channel(n: int):
         return n
 
 
-def main():
+def mute():
     pm = get_plugin_manager()
     try:
         from argparse import ArgumentParser
@@ -52,11 +52,26 @@ def main():
 
 
 def get_plugin_manager():
+
     pm = PluginManager('mixer')
     pm.add_hookspecs(Mixer)
-    pm.register(XAir(hook=pm.hook, port='X18', client_name='XAir'))
+    # pm.register(XAir(hook=pm.hook, port='X18', client_name='XAir'))
+    pm.register(Command8(hook=pm.hook, port='Command8 Port 1', client_name='Command8'))
+    pm.register(
+        Generic(
+            hook=pm.hook,
+            client_name='generic',
+        )
+    )
     return pm
 
 
-if __name__ == '__main__':
-    main()
+def main():
+    pm = get_plugin_manager()
+    try:
+        while True:
+            input()
+    except Exception as e:
+        print(e)
+    finally:
+        pm.hook.close()
