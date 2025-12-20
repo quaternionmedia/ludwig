@@ -1,6 +1,6 @@
 # Ludwig - Next Steps & Recommendations
 
-## What We've Built Today
+## What We've Built So Far
 
 ### 1. Project Roadmap ([PROJECT_ROADMAP.md](PROJECT_ROADMAP.md))
 
@@ -9,14 +9,14 @@
 - Risk assessment and success metrics
 - Feature prioritization (P0/P1/P2)
 
-### 2. Pydantic Models ([ludwig/models.py](../../ludwig/models.py))
+### 2. Pydantic Models ([src/ludwig/models.py](../../src/ludwig/models.py))
 
 - Protocol-agnostic state representation
 - `Channel`, `MixerState`, `DeviceInfo` models
 - Processing models: `Equalizer`, `Compressor`, `Gate`
 - API message models for WebSocket communication
 
-### 3. Enhanced Hook Specifications ([ludwig/hookspecs.py](../../ludwig/hookspecs.py))
+### 3. Enhanced Hook Specifications ([src/ludwig/hookspecs.py](../../src/ludwig/hookspecs.py))
 
 - State-aware `MixerSpec` with normalized values
 - Connection lifecycle hooks
@@ -24,32 +24,41 @@
 - Scene and meter management hooks
 - `ProtocolAdapterSpec` for MIDI/OSC abstraction
 
-### 4. Base Plugin Architecture ([ludwig/plugins/base.py](../../ludwig/plugins/base.py))
+### 4. Base Plugin Architecture ([src/ludwig/plugins/base.py](../../src/ludwig/plugins/base.py))
 
 - Abstract `BoardPlugin` base class
 - Value translation methods (normalized ↔ hardware)
 - Hook implementations with state tracking
 - Template for new board implementations
 
-### 5. FastAPI Server ([ludwig/server/](../../ludwig/server/))
+### 5. XAir Board Plugin ([src/ludwig/boards/xair.py](../../src/ludwig/boards/xair.py)) ✅ MIGRATED
+
+- Full implementation using new `BoardPlugin` architecture
+- MIDI CC mapping for faders, mutes, pan
+- Bidirectional MIDI input handling
+- Normalized value translation (0.0-1.0)
+- Channel type routing (input, aux, FX, main)
+
+### 6. FastAPI Server ([src/ludwig/server/](../../src/ludwig/server/))
 
 - REST endpoints for device/channel management
 - WebSocket for real-time bidirectional updates
 - Meter broadcasting infrastructure
 - State manager for synchronized state
 
-### 6. Frontend Specification ([FRONTEND_SPEC.md](FRONTEND_SPEC.md))
+### 7. Frontend Specification ([FRONTEND_SPEC.md](FRONTEND_SPEC.md))
 
-- Component library design (Fader, Meter, Knob)
+- **Mithril.js** with **Meiosis pattern** for state management
+- Component library (Fader, Meter, Knob, ChannelStrip)
 - View layouts (Channel Strip, Detail, Send Matrix, Scenes)
-- Svelte store patterns for WebSocket state
+- WebSocket integration with streams
 - Performance and accessibility guidelines
 
 ---
 
 ## Immediate Next Steps (This Week)
 
-### 1. ✅ Validate Models
+### 1. ✅ Validate Models (Complete)
 
 ```bash
 cd /home/harpo/ludwig
@@ -57,12 +66,17 @@ uv sync  # Install dependencies
 python -c "from ludwig.models import MixerState, Channel; print('Models OK')"
 ```
 
-### 2. Migrate Existing Board Plugins
+### 2. ✅ XAir Board Migration (Complete)
 
-Refactor `Qu24`, `GLD`, `XAir` to use the new `BoardPlugin` base:
+The XAir board has been fully migrated to the new `BoardPlugin` architecture.
+See [src/ludwig/boards/xair.py](../../src/ludwig/boards/xair.py)
+
+### 3. Migrate Remaining Board Plugins
+
+Refactor `Qu24` and `GLD` to use the new `BoardPlugin` base:
 
 ```python
-# Example: ludwig/boards/qu24_v2.py
+# Example: src/ludwig/boards/qu24.py
 from ludwig.plugins.base import BoardPlugin
 from ludwig.models import DeviceCapabilities, ChannelType, ConnectionProtocol
 
@@ -83,7 +97,7 @@ class Qu24Plugin(BoardPlugin):
     # ... implement abstract methods
 ```
 
-### 3. Test API Server
+### 4. Test API Server
 
 ```bash
 # Start server
@@ -94,28 +108,36 @@ curl http://localhost:8000/docs  # OpenAPI docs
 curl http://localhost:8000/api/devices
 ```
 
-### 4. Prototype Frontend
+### 5. Set Up Frontend Project
 
 ```bash
-# In a separate directory
-npx sv create frontend  # Svelte 5 with SvelteKit
-cd frontend
-npm install
-npm run dev
+# Create Mithril.js project with Vite
+mkdir frontend && cd frontend
+npm init -y
+npm install mithril mithril-stream
+npm install -D vite tailwindcss postcss autoprefixer
+npx tailwindcss init -p
+
+# Create entry point
+echo 'import m from "mithril"
+m.mount(document.body, { view: () => m("h1", "Ludwig") })' > src/app.js
 ```
 
 ---
 
 ## Short-Term Priorities (Weeks 1-4)
 
-| Priority | Task                                    | Effort |
-| -------- | --------------------------------------- | ------ |
-| 🔴 High  | Migrate Qu24 plugin to new architecture | 2 days |
-| 🔴 High  | Implement WebSocket state sync in API   | 1 day  |
-| 🔴 High  | Create Fader + Meter components         | 3 days |
-| 🟡 Med   | Add meter subscription to hardware      | 2 days |
-| 🟡 Med   | Implement scene recall flow             | 2 days |
-| 🟢 Low   | Add OSC protocol adapter                | 3 days |
+| Priority | Task                                    | Effort  | Status      |
+| -------- | --------------------------------------- | ------- | ----------- |
+| 🟢 Done | Migrate XAir plugin to new architecture | 2 days  | ✅ Complete |
+| 🔴 High | Migrate Qu24 plugin to new architecture | 2 days  | Not Started |
+| 🔴 High | Migrate GLD plugin to new architecture  | 2 days  | Not Started |
+| 🔴 High | Wire StateManager to board plugins      | 1 day   | Not Started |
+| 🔴 High | Set up Mithril.js frontend project      | 1 day   | Not Started |
+| 🔴 High | Create Fader + Meter components         | 3 days  | Not Started |
+| 🟡 Med  | Add meter subscription to hardware      | 2 days  | Not Started |
+| 🟡 Med  | Implement scene recall flow             | 2 days  | Not Started |
+| 🟢 Low  | Add OSC protocol adapter                | 3 days  | Not Started |
 
 ---
 
@@ -166,6 +188,7 @@ x32 = "ludwig_x32:X32Plugin"  # Third-party package
 - Unit tests for models and value translation
 - Mock hardware for integration tests
 - Use `pytest-asyncio` for API tests
+- Use `ospec` (Mithril's test runner) for frontend unit tests
 - Playwright for frontend E2E tests
 
 ---
@@ -191,7 +214,8 @@ Single Device           Multi-Device              Advanced Features
 2. **Offline support**: Should scenes be editable without hardware connected?
 3. **MIDI learn**: Allow mapping control surfaces to any parameter?
 4. **Multi-device**: Link multiple mixers with parameter sync?
-5. **Mobile native**: Web-only or eventual React Native / Flutter?
+5. **Mobile native**: Web-only (current plan with Mithril.js) or eventual native apps?
+6. **Authentication**: Simple PIN? Full user accounts? None for local use?
 
 ---
 
@@ -201,7 +225,9 @@ Single Device           Multi-Device              Advanced Features
 - **python-rtmidi docs**: https://spotlightkid.github.io/python-rtmidi/
 - **python-osc**: https://pypi.org/project/python-osc/
 - **FastAPI WebSockets**: https://fastapi.tiangolo.com/advanced/websockets/
-- **Svelte stores**: https://svelte.dev/docs/svelte-store
+- **Mithril.js docs**: https://mithril.js.org/
+- **Meiosis pattern**: https://meiosis.js.org/
+- **Mithril Stream**: https://mithril.js.org/stream.html
 
 ---
 
@@ -212,24 +238,30 @@ ludwig/
 ├── docs/
 │   └── planning/
 │       ├── PROJECT_ROADMAP.md     # Full project plan
-│       ├── FRONTEND_SPEC.md       # UI specification
+│       ├── FRONTEND_SPEC.md       # UI specification (Mithril/Meiosis)
 │       └── NEXT_STEPS.md          # This document
-├── ludwig/
-│   ├── models.py                  # NEW: Pydantic models
-│   ├── hookspecs.py               # NEW: Enhanced hook specs
+├── src/ludwig/
+│   ├── models.py                  # Pydantic models
+│   ├── hookspecs.py               # Enhanced hook specs
 │   ├── mixer.py                   # Original (to deprecate)
 │   ├── plugins/
 │   │   ├── __init__.py
-│   │   └── base.py                # NEW: Base plugin class
+│   │   └── base.py                # Base plugin class
 │   ├── server/
 │   │   ├── __init__.py
-│   │   ├── api.py                 # NEW: FastAPI server
-│   │   ├── state.py               # NEW: State manager
-│   │   └── websocket.py           # NEW: WS manager
-│   └── boards/                    # Existing (to migrate)
+│   │   ├── api.py                 # FastAPI server
+│   │   ├── state.py               # State manager
+│   │   └── websocket.py           # WS manager
+│   └── boards/
+│       ├── xair.py                # ✅ Migrated to BoardPlugin
+│       ├── qu24.py                # To migrate
+│       ├── gld.py                 # To migrate
+│       └── ...                    # Other boards
 └── pyproject.toml                 # Updated dependencies
 ```
 
 ---
 
-_Ready to start building! Let me know which area you'd like to tackle first._
+_Last Updated: December 20, 2025_
+
+_Ready to start building! Next recommended step: Migrate Qu24 or set up the frontend project._

@@ -36,7 +36,7 @@ Transform Ludwig from a simple MIDI mixer control library into a fully-fledged a
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                              WEB FRONTEND                                    │
-│    React/Vue/Svelte SPA with WebSocket real-time updates                    │
+│    Mithril.js SPA with Meiosis pattern + WebSocket real-time updates        │
 │    - Channel strips, faders, meters                                          │
 │    - EQ/Dynamics/FX editors                                                  │
 │    - Scene management                                                        │
@@ -93,11 +93,13 @@ Transform Ludwig from a simple MIDI mixer control library into a fully-fledged a
 
 | Task                                   | Priority | Estimate | Status      |
 | -------------------------------------- | -------- | -------- | ----------- |
-| Define Pydantic models for mixer state | High     | 3 days   | Not Started |
-| Refactor Mixer hookspec to use models  | High     | 2 days   | Not Started |
-| Create abstract Protocol adapter base  | High     | 2 days   | Not Started |
-| Implement StateManager class           | High     | 3 days   | Not Started |
+| Define Pydantic models for mixer state | High     | 3 days   | ✅ Complete |
+| Refactor Mixer hookspec to use models  | High     | 2 days   | ✅ Complete |
+| Create abstract Protocol adapter base  | High     | 2 days   | ✅ Complete |
+| Implement StateManager class           | High     | 3 days   | ✅ Complete |
+| Migrate XAir board to new architecture | High     | 2 days   | ✅ Complete |
 | Add event bus for state changes        | Medium   | 2 days   | Not Started |
+| Migrate Qu24/GLD boards                | Medium   | 3 days   | Not Started |
 | Unit tests for core components         | High     | 3 days   | Not Started |
 
 ### Phase 2: FastAPI Server (Weeks 3-5)
@@ -106,10 +108,11 @@ Transform Ludwig from a simple MIDI mixer control library into a fully-fledged a
 
 | Task                                  | Priority | Estimate | Status      |
 | ------------------------------------- | -------- | -------- | ----------- |
-| FastAPI project structure             | High     | 1 day    | Not Started |
-| REST endpoints for mixer operations   | High     | 3 days   | Not Started |
-| WebSocket endpoint for real-time sync | High     | 3 days   | Not Started |
-| Meter streaming via WebSocket         | High     | 2 days   | Not Started |
+| FastAPI project structure             | High     | 1 day    | ✅ Complete |
+| REST endpoints for mixer operations   | High     | 3 days   | ✅ Complete |
+| WebSocket endpoint for real-time sync | High     | 3 days   | ✅ Complete |
+| WebSocket connection manager          | High     | 1 day    | ✅ Complete |
+| Meter streaming via WebSocket         | High     | 2 days   | In Progress |
 | Device discovery/connection endpoints | Medium   | 2 days   | Not Started |
 | Authentication middleware             | Low      | 2 days   | Not Started |
 
@@ -127,16 +130,17 @@ Transform Ludwig from a simple MIDI mixer control library into a fully-fledged a
 
 **Goal:** Create basic but functional web UI
 
-| Task                                  | Priority | Estimate | Status      |
-| ------------------------------------- | -------- | -------- | ----------- |
-| Frontend project setup (Svelte/React) | High     | 1 day    | Not Started |
-| Channel strip component               | High     | 3 days   | Not Started |
-| Fader component with touch support    | High     | 2 days   | Not Started |
-| Meter visualization component         | High     | 2 days   | Not Started |
-| Mute/Solo button group                | High     | 1 day    | Not Started |
-| Pan control component                 | Medium   | 1 day    | Not Started |
-| Main mix view layout                  | High     | 2 days   | Not Started |
-| WebSocket state synchronization       | High     | 2 days   | Not Started |
+| Task                                | Priority | Estimate | Status      |
+| ----------------------------------- | -------- | -------- | ----------- |
+| Frontend project setup (Mithril.js) | High     | 1 day    | Not Started |
+| Meiosis state management setup      | High     | 1 day    | Not Started |
+| Channel strip component             | High     | 3 days   | Not Started |
+| Fader component with touch support  | High     | 2 days   | Not Started |
+| Meter visualization component       | High     | 2 days   | Not Started |
+| Mute/Solo button group              | High     | 1 day    | Not Started |
+| Pan/Knob control component          | Medium   | 1 day    | Not Started |
+| Main mix view layout                | High     | 2 days   | Not Started |
+| WebSocket state synchronization     | High     | 2 days   | Not Started |
 
 ### Phase 5: Advanced Features (Weeks 9-12)
 
@@ -208,8 +212,8 @@ Transform Ludwig from a simple MIDI mixer control library into a fully-fledged a
 
 ### Frontend
 
-- **Framework:** Svelte/SvelteKit (lightweight, reactive) or React
-- **State:** Stores with WebSocket sync
+- **Framework:** Mithril.js (ultra-lightweight 10kb, fast auto-redraw)
+- **State:** Meiosis pattern with Mithril streams
 - **UI:** Custom components (no heavy UI library)
 - **Styling:** TailwindCSS
 - **Build:** Vite
@@ -244,11 +248,16 @@ Transform Ludwig from a simple MIDI mixer control library into a fully-fledged a
 ## Next Steps (Immediate)
 
 1. ✅ Create project roadmap (this document)
-2. 🔲 Define Pydantic models for unified mixer state
-3. 🔲 Create enhanced pluggy hookspec with state awareness
-4. 🔲 Design FastAPI endpoint schema
-5. 🔲 Create frontend component wireframes
+2. ✅ Define Pydantic models for unified mixer state
+3. ✅ Create enhanced pluggy hookspec with state awareness
+4. ✅ Design FastAPI endpoint schema
+5. ✅ Migrate XAir board plugin to new architecture
+6. ✅ Create frontend component specification (Mithril/Meiosis)
+7. 🔲 Migrate Qu24 and GLD board plugins
+8. 🔲 Wire up StateManager with actual board plugins
+9. 🔲 Set up frontend project with Vite + Mithril.js
+10. 🔲 Implement core UI components (Fader, Meter, ChannelStrip)
 
 ---
 
-_Last Updated: December 18, 2025_
+_Last Updated: December 20, 2025_

@@ -8,15 +8,15 @@ The Ludwig frontend is a web-based audio mixer control interface designed to pro
 
 ## Technology Stack
 
-| Component   | Recommendation          | Rationale                                              |
-| ----------- | ----------------------- | ------------------------------------------------------ |
-| Framework   | **Svelte/SvelteKit**    | Lightweight, excellent reactivity, minimal bundle size |
-| Alternative | React + Zustand         | If team prefers React ecosystem                        |
-| Styling     | TailwindCSS             | Utility-first, responsive, dark mode support           |
-| State       | Svelte stores / Zustand | Simple, reactive state management                      |
-| WebSocket   | Native WebSocket        | No library needed, reconnection logic only             |
-| Build       | Vite                    | Fast dev server, optimized builds                      |
-| Canvas      | HTML5 Canvas            | For meters (performance)                               |
+| Component | Recommendation      | Rationale                                                |
+| --------- | ------------------- | -------------------------------------------------------- |
+| Framework | **Mithril.js**      | Ultra-lightweight (10kb), fast, simple API, auto-redraw  |
+| State     | **Meiosis pattern** | Functional state management with streams, no boilerplate |
+| Streams   | Mithril Stream      | Built-in reactive streams for state updates              |
+| Styling   | TailwindCSS         | Utility-first, responsive, dark mode support             |
+| WebSocket | Native WebSocket    | No library needed, reconnection logic only               |
+| Build     | Vite                | Fast dev server, optimized builds                        |
+| Canvas    | HTML5 Canvas        | For meters (performance)                                 |
 
 ---
 
@@ -167,38 +167,144 @@ Device configuration and connection management.
 
 ### Fader Component
 
-```typescript
-interface FaderProps {
-  value: number // 0.0 - 1.0
-  onChange: (v: number) => void
-  min?: number // dB label
-  max?: number // dB label
-  color?: string
-  disabled?: boolean
-  showValue?: boolean
+```javascript
+// components/Fader.js
+import m from 'mithril'
+
+export const Fader = {
+  oninit(vnode) {
+    this.dragging = false
+    this.startY = 0
+    this.startValue = 0
+  },
+
+  onPointerDown(e, vnode) {
+    this.dragging = true
+    this.startY = e.clientY
+    this.startValue = vnode.attrs.value
+    e.target.setPointerCapture(e.pointerId)
+  },
+
+  onPointerMove(e, vnode) {
+    if (!this.dragging) return
+    const delta = (this.startY - e.clientY) / 200 // 200px = full range
+    const newValue = Math.max(0, Math.min(1, this.startValue + delta))
+    vnode.attrs.onChange(newValue)
+  },
+
+  onPointerUp(e) {
+    this.dragging = false
+  },
+
+  onDblClick(vnode) {
+    // Double-tap resets to 0dB (0.75 normalized)
+    vnode.attrs.onChange(0.75)
+  },
+
+  view(vnode) {
+    const { value, disabled, color = '#3b82f6', showValue = true } = vnode.attrs
+    const percentage = value * 100
+
+    return m(
+      '.fader.relative.h-48.w-8.bg-gray-800.rounded',
+      {
+        class: disabled ? 'opacity-50' : 'cursor-ns-resize',
+        onpointerdown: e => this.onPointerDown(e, vnode),
+        onpointermove: e => this.onPointerMove(e, vnode),
+        onpointerup: e => this.onPointerUp(e),
+        ondblclick: () => this.onDblClick(vnode),
+      },
+      [
+        // Track
+        m('.absolute.bottom-0.left-1.right-1.bg-gray-600.rounded', {
+          style: { height: '100%' },
+        }),
+        // Fill
+        m('.absolute.bottom-0.left-1.right-1.rounded.transition-all', {
+          style: { height: `${percentage}%`, backgroundColor: color },
+        }),
+        // Handle
+        m(
+          '.absolute.left-0.right-0.h-4.bg-white.rounded.shadow-lg.cursor-grab',
+          {
+            style: { bottom: `calc(${percentage}% - 8px)` },
+          }
+        ),
+        // Value label
+        showValue &&
+          m(
+            '.absolute.-right-8.text-xs.text-gray-400',
+            {
+              style: { bottom: `calc(${percentage}% - 6px)` },
+            },
+            `${Math.round(value * 100)}%`
+          ),
+      ]
+    )
+  },
 }
 ```
 
 Features:
 
-- Touch drag with momentum
+- Touch drag with pointer events
 - Double-tap to reset to 0dB
 - Value tooltip while dragging
 - Optional dB scale markers
 
 ### Meter Component
 
-```typescript
-interface MeterProps {
-  level: number // 0.0 - 1.0
-  peak?: number // Peak hold
-  orientation: 'vertical' | 'horizontal'
-  segments?: number // LED segment count
-  colors?: {
-    normal: string
-    warning: string // -6dB
-    clip: string // 0dB
-  }
+```javascript
+// components/Meter.js
+import m from 'mithril'
+
+export const Meter = {
+  oncreate(vnode) {
+    this.canvas = vnode.dom
+    this.ctx = this.canvas.getContext('2d')
+    this.peakHold = 0
+    this.peakTimer = 0
+    this.animate(vnode)
+  },
+
+  animate(vnode) {
+    const { level = 0, peak } = vnode.attrs
+    const { width, height } = this.canvas
+
+    // Clear
+    this.ctx.fillStyle = '#1f2937'
+    this.ctx.fillRect(0, 0, width, height)
+
+    // Calculate fill height
+    const fillHeight = level * height
+
+    // Gradient fill
+    const gradient = this.ctx.createLinearGradient(0, height, 0, 0)
+    gradient.addColorStop(0, '#22c55e') // Green
+    gradient.addColorStop(0.7, '#eab308') // Yellow at -6dB
+    gradient.addColorStop(0.9, '#ef4444') // Red at -3dB
+
+    this.ctx.fillStyle = gradient
+    this.ctx.fillRect(0, height - fillHeight, width, fillHeight)
+
+    // Peak hold
+    if (peak !== undefined) {
+      this.ctx.fillStyle = '#ffffff'
+      const peakY = height - peak * height
+      this.ctx.fillRect(0, peakY, width, 2)
+    }
+
+    requestAnimationFrame(() => this.animate(vnode))
+  },
+
+  view(vnode) {
+    const { orientation = 'vertical', width = 12, height = 150 } = vnode.attrs
+
+    return m('canvas.rounded', {
+      width: orientation === 'vertical' ? width : height,
+      height: orientation === 'vertical' ? height : width,
+    })
+  },
 }
 ```
 
@@ -206,20 +312,78 @@ Features:
 
 - Canvas-rendered for performance
 - Configurable peak hold time
-- Gradient or segmented display
+- Gradient display (green → yellow → red)
 - Smooth animation (requestAnimationFrame)
 
 ### Knob Component
 
-```typescript
-interface KnobProps {
-  value: number
-  onChange: (v: number) => void
-  min: number
-  max: number
-  detent?: number // Center detent value
-  label?: string
-  size?: 'sm' | 'md' | 'lg'
+```javascript
+// components/Knob.js
+import m from 'mithril'
+
+export const Knob = {
+  oninit() {
+    this.dragging = false
+    this.startY = 0
+    this.startValue = 0
+  },
+
+  view(vnode) {
+    const { value, min = 0, max = 1, detent, label, size = 'md' } = vnode.attrs
+    const normalized = (value - min) / (max - min)
+    const rotation = -135 + normalized * 270 // -135° to +135°
+
+    const sizes = { sm: 'w-8 h-8', md: 'w-12 h-12', lg: 'w-16 h-16' }
+
+    return m('.knob.flex.flex-col.items-center', [
+      m(
+        `.relative.${sizes[size]}.rounded-full.bg-gray-700.cursor-pointer`,
+        {
+          onpointerdown: e => {
+            this.dragging = true
+            this.startY = e.clientY
+            this.startValue = value
+            e.target.setPointerCapture(e.pointerId)
+          },
+          onpointermove: e => {
+            if (!this.dragging) return
+            const delta = (this.startY - e.clientY) / 100
+            const range = max - min
+            const newValue = Math.max(
+              min,
+              Math.min(max, this.startValue + delta * range)
+            )
+            // Snap to detent if close
+            if (
+              detent !== undefined &&
+              Math.abs(newValue - detent) < range * 0.05
+            ) {
+              vnode.attrs.onChange(detent)
+            } else {
+              vnode.attrs.onChange(newValue)
+            }
+          },
+          onpointerup: () => {
+            this.dragging = false
+          },
+        },
+        [
+          // Indicator line
+          m(
+            '.absolute.top-1.left-1/2.w-0.5.h-3.bg-white.rounded.origin-bottom',
+            {
+              style: { transform: `translateX(-50%) rotate(${rotation}deg)` },
+            }
+          ),
+          // Center dot
+          m('.absolute.top-1/2.left-1/2.w-2.h-2.bg-gray-500.rounded-full', {
+            style: { transform: 'translate(-50%, -50%)' },
+          }),
+        ]
+      ),
+      label && m('.text-xs.text-gray-400.mt-1', label),
+    ])
+  },
 }
 ```
 
@@ -231,13 +395,127 @@ Features:
 
 ### Button Component
 
-```typescript
-interface ToggleButtonProps {
-  active: boolean
-  onToggle: () => void
-  label: string
-  activeColor?: 'red' | 'yellow' | 'green' | 'blue'
-  size?: 'sm' | 'md' | 'lg'
+```javascript
+// components/ToggleButton.js
+import m from 'mithril'
+
+const colorMap = {
+  red: { active: 'bg-red-600', inactive: 'bg-gray-700 hover:bg-gray-600' },
+  yellow: {
+    active: 'bg-yellow-500 text-black',
+    inactive: 'bg-gray-700 hover:bg-gray-600',
+  },
+  green: { active: 'bg-green-600', inactive: 'bg-gray-700 hover:bg-gray-600' },
+  blue: { active: 'bg-blue-600', inactive: 'bg-gray-700 hover:bg-gray-600' },
+}
+
+const sizeMap = {
+  sm: 'px-2 py-1 text-xs',
+  md: 'px-3 py-1.5 text-sm',
+  lg: 'px-4 py-2 text-base',
+}
+
+export const ToggleButton = {
+  view(vnode) {
+    const {
+      active,
+      onToggle,
+      label,
+      activeColor = 'blue',
+      size = 'md',
+    } = vnode.attrs
+    const colors = colorMap[activeColor]
+
+    return m(
+      'button.rounded.font-medium.transition-colors',
+      {
+        class: `${sizeMap[size]} ${active ? colors.active : colors.inactive}`,
+        onclick: onToggle,
+      },
+      label
+    )
+  },
+}
+
+// Specialized buttons
+export const MuteButton = {
+  view(vnode) {
+    return m(ToggleButton, {
+      ...vnode.attrs,
+      label: 'M',
+      activeColor: 'red',
+    })
+  },
+}
+
+export const SoloButton = {
+  view(vnode) {
+    return m(ToggleButton, {
+      ...vnode.attrs,
+      label: 'S',
+      activeColor: 'yellow',
+    })
+  },
+}
+```
+
+### Channel Strip Component
+
+```javascript
+// components/ChannelStrip.js
+import m from 'mithril'
+import { Fader } from './Fader'
+import { Meter } from './Meter'
+import { Knob } from './Knob'
+import { MuteButton, SoloButton } from './ToggleButton'
+
+export const ChannelStrip = {
+  view(vnode) {
+    const { channel, meterLevel, actions } = vnode.attrs
+    const { id, name, fader, mute, solo, pan, color } = channel
+
+    return m(
+      '.channel-strip.flex.flex-col.items-center.p-2.bg-gray-900.rounded-lg.gap-2',
+      {
+        style: { borderTop: `3px solid ${color || '#3b82f6'}` },
+      },
+      [
+        // Meter
+        m(Meter, { level: meterLevel, orientation: 'vertical' }),
+
+        // Pan knob
+        m(Knob, {
+          value: pan,
+          min: -1,
+          max: 1,
+          detent: 0,
+          size: 'sm',
+          onChange: v => actions.setPan(id, v),
+        }),
+
+        // Mute/Solo buttons
+        m('.flex.gap-1', [
+          m(MuteButton, {
+            active: mute,
+            onToggle: () => actions.setMute(id, !mute),
+          }),
+          m(SoloButton, {
+            active: solo,
+            onToggle: () => actions.setSolo(id, !solo),
+          }),
+        ]),
+
+        // Fader
+        m(Fader, {
+          value: fader,
+          onChange: v => actions.setFader(id, v),
+        }),
+
+        // Channel name
+        m('.text-xs.text-center.text-gray-300.truncate.w-full', name || id),
+      ]
+    )
+  },
 }
 ```
 
@@ -245,93 +523,291 @@ interface ToggleButtonProps {
 
 ## State Management
 
-### WebSocket Store (Svelte)
+### Meiosis Pattern Overview
 
-```typescript
-// stores/mixer.ts
-import { writable, derived } from 'svelte/store'
+The Meiosis pattern uses streams for state management with a simple, functional approach:
 
-interface MixerState {
-  connected: boolean
-  device: DeviceInfo | null
-  channels: Record<string, Channel>
-  meters: Record<string, number>
-}
-
-function createMixerStore() {
-  const { subscribe, set, update } = writable<MixerState>({
-    connected: false,
-    device: null,
-    channels: {},
-    meters: {},
-  })
-
-  let ws: WebSocket | null = null
-
-  return {
-    subscribe,
-    connect: (url: string) => {
-      ws = new WebSocket(url)
-      ws.onopen = () => update(s => ({ ...s, connected: true }))
-      ws.onclose = () => update(s => ({ ...s, connected: false }))
-      ws.onmessage = event => {
-        const msg = JSON.parse(event.data)
-        handleMessage(msg, update)
-      }
-    },
-    setFader: (channelId: string, level: number) => {
-      ws?.send(
-        JSON.stringify({ type: 'fader', channel_id: channelId, value: level })
-      )
-      update(s => ({
-        ...s,
-        channels: {
-          ...s.channels,
-          [channelId]: { ...s.channels[channelId], fader: level },
-        },
-      }))
-    },
-    // ... other methods
-  }
-}
-
-export const mixer = createMixerStore()
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   Actions   │────▶│   Update    │────▶│    State    │
+│  (patches)  │     │  (reduce)   │     │  (stream)   │
+└─────────────┘     └─────────────┘     └─────────────┘
+                                               │
+                                               ▼
+                                        ┌─────────────┐
+                                        │    View     │
+                                        │  (Mithril)  │
+                                        └─────────────┘
 ```
 
-### Derived Stores
+### State Stream Setup
 
-```typescript
-// Derived store for just input channels
-export const inputChannels = derived(mixer, $mixer =>
-  Object.values($mixer.channels).filter(ch => ch.channel_type === 'input')
+```javascript
+// state/index.js
+import Stream from 'mithril/stream'
+
+// Initial state
+const initialState = {
+  connected: false,
+  device: null,
+  channels: {},
+  meters: {},
+  ui: {
+    selectedChannel: null,
+    currentView: 'mixer',
+  },
+}
+
+// Create update stream for patches
+const update = Stream()
+
+// Create state stream by scanning patches
+const states = Stream.scan(
+  (state, patch) => ({ ...state, ...patch }),
+  initialState,
+  update
 )
 
-// Derived store for connection status
-export const isConnected = derived(mixer, $mixer => $mixer.connected)
+export { states, update }
+```
+
+### Actions Module
+
+```javascript
+// state/actions.js
+import m from 'mithril'
+
+export const createActions = (update, ws) => ({
+  // Connection
+  setConnected: connected => update({ connected }),
+
+  // Channel controls
+  setFader: (channelId, level) => {
+    // Optimistic update
+    update(state => ({
+      channels: {
+        ...state.channels,
+        [channelId]: { ...state.channels[channelId], fader: level },
+      },
+    }))
+    // Send to server
+    ws.send(
+      JSON.stringify({ type: 'fader', channel_id: channelId, value: level })
+    )
+  },
+
+  setMute: (channelId, muted) => {
+    update(state => ({
+      channels: {
+        ...state.channels,
+        [channelId]: { ...state.channels[channelId], mute: muted },
+      },
+    }))
+    ws.send(
+      JSON.stringify({ type: 'mute', channel_id: channelId, value: muted })
+    )
+  },
+
+  setPan: (channelId, pan) => {
+    update(state => ({
+      channels: {
+        ...state.channels,
+        [channelId]: { ...state.channels[channelId], pan: pan },
+      },
+    }))
+    ws.send(JSON.stringify({ type: 'pan', channel_id: channelId, value: pan }))
+  },
+
+  // Bulk state update (from server)
+  setState: newState => update({ ...newState }),
+
+  // Meter updates (high frequency, no WebSocket send)
+  updateMeters: meters => {
+    update({ meters })
+    m.redraw() // Force redraw for meter animation
+  },
+
+  // UI actions
+  selectChannel: channelId => update({ ui: { selectedChannel: channelId } }),
+  setView: view => update({ ui: { currentView: view } }),
+})
+```
+
+### WebSocket Integration
+
+```javascript
+// state/websocket.js
+import m from 'mithril'
+
+export const createWebSocket = (url, actions) => {
+  let ws = null
+  let reconnectTimer = null
+
+  const connect = () => {
+    ws = new WebSocket(url)
+
+    ws.onopen = () => {
+      actions.setConnected(true)
+      m.redraw()
+    }
+
+    ws.onclose = () => {
+      actions.setConnected(false)
+      m.redraw()
+      // Reconnect after 2 seconds
+      reconnectTimer = setTimeout(connect, 2000)
+    }
+
+    ws.onmessage = event => {
+      const msg = JSON.parse(event.data)
+      handleMessage(msg, actions)
+    }
+  }
+
+  const handleMessage = (msg, actions) => {
+    switch (msg.type) {
+      case 'state':
+        actions.setState({
+          device: msg.data.device,
+          channels: msg.data.channels,
+        })
+        break
+      case 'parameter':
+        actions.setChannelParam(msg.channel_id, msg.parameter, msg.value)
+        break
+      case 'meters':
+        actions.updateMeters(msg.levels)
+        break
+      case 'pong':
+        // Keepalive response
+        break
+    }
+    m.redraw()
+  }
+
+  const send = message => {
+    if (ws?.readyState === WebSocket.OPEN) {
+      ws.send(message)
+    }
+  }
+
+  const disconnect = () => {
+    clearTimeout(reconnectTimer)
+    ws?.close()
+  }
+
+  return { connect, send, disconnect }
+}
+```
+
+### App Bootstrap
+
+```javascript
+// app.js
+import m from 'mithril'
+import { states, update } from './state'
+import { createActions } from './state/actions'
+import { createWebSocket } from './state/websocket'
+import { Layout } from './views/Layout'
+import { MixerView } from './views/MixerView'
+import { ChannelDetail } from './views/ChannelDetail'
+import { SendMatrix } from './views/SendMatrix'
+import { Scenes } from './views/Scenes'
+
+// Initialize WebSocket and actions
+const ws = createWebSocket('ws://localhost:8000/ws', null)
+const actions = createActions(update, ws)
+
+// Re-wire WebSocket with actions
+ws.actions = actions
+ws.connect()
+
+// Subscribe to state changes for auto-redraw
+states.map(() => m.redraw())
+
+// Route components receive state and actions
+const withState = Component => ({
+  view: () => m(Component, { state: states(), actions }),
+})
+
+// Routes
+m.route(document.body, '/', {
+  '/': withState(MixerView),
+  '/channel/:id': withState(ChannelDetail),
+  '/sends': withState(SendMatrix),
+  '/scenes': withState(Scenes),
+})
 ```
 
 ---
 
 ## Performance Considerations
 
+### Mithril Auto-Redraw
+
+Mithril automatically redraws after event handlers, but for high-frequency updates:
+
+```javascript
+// Disable auto-redraw for meter updates to batch them
+ws.onmessage = event => {
+  const msg = JSON.parse(event.data)
+  if (msg.type === 'meters') {
+    // Update state without triggering redraw
+    Object.assign(state.meters, msg.levels)
+  } else {
+    handleMessage(msg, actions)
+    m.redraw()
+  }
+}
+
+// Dedicated meter animation loop (decoupled from state)
+const meterLoop = () => {
+  // Canvas components read directly from state.meters
+  requestAnimationFrame(meterLoop)
+}
+requestAnimationFrame(meterLoop)
+```
+
 ### Meter Rendering
 
-- Use dedicated Canvas element
-- Batch meter updates (don't re-render for each channel)
-- Use `requestAnimationFrame` for smooth 60fps rendering
+- Use dedicated Canvas element per meter
+- Meters read from state but render independently via `requestAnimationFrame`
 - Throttle incoming meter WebSocket messages to 20Hz max
+- Use `oncreate` lifecycle for canvas initialization
 
 ### Fader Updates
 
-- Debounce outgoing WebSocket messages (10-20ms)
-- Use optimistic updates (update UI immediately, send async)
-- Batch multiple rapid changes
+```javascript
+// Debounce outgoing WebSocket messages
+let faderTimeout = null
+const debouncedFader = (channelId, value) => {
+  // Immediate local update
+  update(state => ({
+    channels: {
+      ...state.channels,
+      [channelId]: { ...state.channels[channelId], fader: value },
+    },
+  }))
+
+  // Debounced network send
+  clearTimeout(faderTimeout)
+  faderTimeout = setTimeout(() => {
+    ws.send(JSON.stringify({ type: 'fader', channel_id: channelId, value }))
+  }, 16) // ~60fps max send rate
+}
+```
 
 ### Large Channel Counts
 
-- Virtualize channel list for >32 channels
-- Only render visible channels
-- Use intersection observer for lazy loading
+- Use `onbeforeupdate` to skip unchanged channel strips:
+  ```javascript
+  onbeforeupdate(vnode, old) {
+    return vnode.attrs.channel !== old.attrs.channel
+        || vnode.attrs.meterLevel !== old.attrs.meterLevel
+  }
+  ```
+- Virtualize channel list for >32 channels using intersection observer
+- Only render visible channels with `m.fragment`
 
 ---
 
@@ -361,40 +837,87 @@ export const isConnected = derived(mixer, $mixer => $mixer.connected)
 ```
 frontend/
 ├── src/
-│   ├── lib/
-│   │   ├── components/
-│   │   │   ├── ChannelStrip.svelte
-│   │   │   ├── Fader.svelte
-│   │   │   ├── Meter.svelte
-│   │   │   ├── Knob.svelte
-│   │   │   ├── MuteButton.svelte
-│   │   │   ├── SoloButton.svelte
-│   │   │   ├── EQEditor.svelte
-│   │   │   ├── CompressorEditor.svelte
-│   │   │   └── SendMatrix.svelte
-│   │   ├── stores/
-│   │   │   ├── mixer.ts
-│   │   │   ├── ui.ts
-│   │   │   └── settings.ts
-│   │   └── utils/
-│   │       ├── websocket.ts
-│   │       ├── db-conversion.ts
-│   │       └── gestures.ts
-│   ├── routes/
-│   │   ├── +page.svelte          # Main mixer view
-│   │   ├── +layout.svelte        # App shell
-│   │   ├── channel/
-│   │   │   └── [id]/+page.svelte # Channel detail
-│   │   ├── sends/+page.svelte    # Send matrix
-│   │   ├── scenes/+page.svelte   # Scene management
-│   │   └── settings/+page.svelte # Settings
-│   ├── app.css
-│   └── app.html
-├── static/
+│   ├── components/
+│   │   ├── ChannelStrip.js
+│   │   ├── Fader.js
+│   │   ├── Meter.js
+│   │   ├── Knob.js
+│   │   ├── ToggleButton.js
+│   │   ├── EQEditor.js
+│   │   ├── CompressorEditor.js
+│   │   └── SendMatrix.js
+│   ├── state/
+│   │   ├── index.js            # State stream setup
+│   │   ├── actions.js          # Action creators
+│   │   └── websocket.js        # WebSocket connection
+│   ├── views/
+│   │   ├── Layout.js           # App shell with nav
+│   │   ├── MixerView.js        # Main channel strip view
+│   │   ├── ChannelDetail.js    # Single channel detail
+│   │   ├── SendMatrix.js       # Aux/bus send grid
+│   │   ├── Scenes.js           # Scene management
+│   │   └── Settings.js         # Connection settings
+│   ├── utils/
+│   │   ├── db-conversion.js    # dB <-> normalized helpers
+│   │   └── gestures.js         # Touch gesture utilities
+│   ├── app.js                  # Entry point, routes
+│   └── app.css                 # Tailwind + custom styles
+├── index.html
 ├── package.json
-├── svelte.config.js
 ├── tailwind.config.js
 └── vite.config.js
+```
+
+### Example View Component
+
+```javascript
+// views/MixerView.js
+import m from 'mithril'
+import { ChannelStrip } from '../components/ChannelStrip'
+
+export const MixerView = {
+  view(vnode) {
+    const { state, actions } = vnode.attrs
+    const inputChannels = Object.values(state.channels)
+      .filter(ch => ch.channel_type === 'input')
+      .sort((a, b) => a.index - b.index)
+
+    return m('.mixer-view.flex.flex-col.h-screen.bg-gray-950', [
+      // Header
+      m('header.flex.items-center.justify-between.p-4.bg-gray-900', [
+        m('h1.text-xl.font-bold.text-white', [
+          'Ludwig',
+          state.device &&
+            m('span.text-gray-400.ml-2', `- ${state.device.name}`),
+        ]),
+        m('.flex.items-center.gap-2', [
+          m('.w-2.h-2.rounded-full', {
+            class: state.connected ? 'bg-green-500' : 'bg-red-500',
+          }),
+          m(
+            'span.text-sm.text-gray-400',
+            state.connected ? 'Connected' : 'Disconnected'
+          ),
+        ]),
+      ]),
+
+      // Channel strips (horizontal scroll)
+      m('.flex-1.overflow-x-auto.p-4', [
+        m(
+          '.flex.gap-2.min-w-max',
+          inputChannels.map(channel =>
+            m(ChannelStrip, {
+              key: channel.id,
+              channel,
+              meterLevel: state.meters[channel.id] || 0,
+              actions,
+            })
+          )
+        ),
+      ]),
+    ])
+  },
+}
 ```
 
 ---
@@ -423,4 +946,4 @@ frontend/
 
 ---
 
-_Last Updated: December 18, 2025_
+_Last Updated: December 20, 2025_
