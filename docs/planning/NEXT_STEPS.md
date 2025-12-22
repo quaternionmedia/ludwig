@@ -127,17 +127,17 @@ m.mount(document.body, { view: () => m("h1", "Ludwig") })' > src/app.js
 
 ## Short-Term Priorities (Weeks 1-4)
 
-| Priority | Task                                    | Effort  | Status      |
-| -------- | --------------------------------------- | ------- | ----------- |
-| 🟢 Done | Migrate XAir plugin to new architecture | 2 days  | ✅ Complete |
-| 🔴 High | Migrate Qu24 plugin to new architecture | 2 days  | Not Started |
-| 🔴 High | Migrate GLD plugin to new architecture  | 2 days  | Not Started |
-| 🔴 High | Wire StateManager to board plugins      | 1 day   | Not Started |
-| 🔴 High | Set up Mithril.js frontend project      | 1 day   | Not Started |
-| 🔴 High | Create Fader + Meter components         | 3 days  | Not Started |
-| 🟡 Med  | Add meter subscription to hardware      | 2 days  | Not Started |
-| 🟡 Med  | Implement scene recall flow             | 2 days  | Not Started |
-| 🟢 Low  | Add OSC protocol adapter                | 3 days  | Not Started |
+| Priority | Task                                    | Effort | Status      |
+| -------- | --------------------------------------- | ------ | ----------- |
+| 🟢 Done  | Migrate XAir plugin to new architecture | 2 days | ✅ Complete |
+| 🔴 High  | Migrate Qu24 plugin to new architecture | 2 days | Not Started |
+| 🔴 High  | Migrate GLD plugin to new architecture  | 2 days | Not Started |
+| 🔴 High  | Wire StateManager to board plugins      | 1 day  | Not Started |
+| 🔴 High  | Set up Mithril.js frontend project      | 1 day  | Not Started |
+| 🔴 High  | Create Fader + Meter components         | 3 days | Not Started |
+| 🟡 Med   | Add meter subscription to hardware      | 2 days | Not Started |
+| 🟡 Med   | Implement scene recall flow             | 2 days | Not Started |
+| 🟢 Low   | Add OSC protocol adapter                | 3 days | Not Started |
 
 ---
 

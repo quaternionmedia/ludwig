@@ -238,10 +238,11 @@ Transform Ludwig from a simple MIDI mixer control library into a fully-fledged a
 
 ## Success Metrics
 
-1. **Latency:** < 50ms round-trip for fader movements
+1. **Responsiveness:** Quick UI updates for user interactions, even on older devices
 2. **Reliability:** Zero lost commands during normal operation
-3. **Compatibility:** Support 3+ major mixer brands
-4. **Usability:** Intuitive enough for live use without training
+3. **Usability:** Intuitive enough for live use without training
+4. **Compatibility:** Support major mixer brands, support most modern browsers
+5. **Latency:** < 50ms round-trip for fader movements
 
 ---
 
